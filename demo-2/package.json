@@ -1,0 +1,23 @@
+{
+  "name": "y",
+  "version": "1.0.0",
+  "description": "postcss webpack",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node main.js"
+  },
+  "author": "hiou",
+  "license": "ISC",
+  "devDependencies": {
+    "css-loader": "^0.28.10",
+    "html-webpack-plugin": "^3.0.3",
+    "postcss-cssnext": "^3.1.0",
+    "postcss-loader": "^2.1.1",
+    "style-loader": "^0.20.2",
+    "webpack": "^4.0.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.5"
+  }
+}

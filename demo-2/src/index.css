@@ -1,0 +1,7 @@
+body {
+	background: color(gray alpha(10%));
+}
+.test {
+	font-size: 20px;
+	color: red;
+}
