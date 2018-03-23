@@ -1,5 +1,6 @@
 const path = require('path');
 
+
 // html 文件插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // 插件配置
@@ -12,6 +13,7 @@ if (process.env.NODE_ENV === 'production') {
 	html_opt.filename = path.resolve(__dirname, '../dist/index.html');
 }
 let htmlPlugin = new HtmlWebpackPlugin(html_opt);
+
 
 // webpack导出文件清理插件
 const CleanWebpackPlugin = require('clean-webpack-plugin');
@@ -26,6 +28,13 @@ let cleanOPtions = {
 let clean = new CleanWebpackPlugin(['dist'], cleanOPtions);
 
 
+// 指定插件数组
+let _plugins = [htmlPlugin];
+if (process.env.NODE_ENV === 'production') {
+	_plugins.push(clean);
+}
+
+
 module.exports = {
 	// 注明开发环境
 	// 根据不同的开发环境决定是否压缩代码
@@ -38,7 +47,7 @@ module.exports = {
 	entry: {
 		app: './src/index.js'
 	},
-	plugins: [clean, htmlPlugin],
+	plugins: _plugins,
 	output: {
 		filename: 'app.bundle.js',
 		path: path.resolve(__dirname, '../dist/js/')

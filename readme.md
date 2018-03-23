@@ -1,14 +1,14 @@
 # postcss配置
 
-### [1. 关于postcss插件](#1)
+* [1. 关于postcss插件](#1)
 
-### [2. gulp配置](#2)
+* [2. gulp配置](#2)
 
-### [3. webpack4.0配置](#3)
+* [3. webpack4.0配置](#3)
 
 ***
 
-<h3 id="1">postcss插件</h3>
+<h4 id="1">postcss插件</h3>
 
 * **cssnext**
 
@@ -17,12 +17,24 @@
 
 * **precss**
 
-在css文件中可以直接使用scss文件系统
+在css文件中可以直接使用sass编写规则，[precss](https://github.com/jonathantneal/precss) 
 
+```css
+$blue:#057ef0;
+$size: 2.4rem;
+
+body {
+  background: color(gray alpha(10%));
+}
+.test {
+  font-size: $size;
+  color: $blue;
+}
+```
 
 ***
 
-<h3 id="2"> gulp配置 </h3>
+<h4 id="2"> gulp配置 </h3>
 
 该项目中demo-1是gulp中postcss的基本配置
 
@@ -49,7 +61,7 @@ gulp.task('css', function () {
 
 ***
 
-<h3 id="3"> webpack4.0配置 </h3>
+<h4 id="3"> webpack4.0配置 </h3>
 
 不得不说webpack4.0版本更加的好用，对于新手更友好，内置插件也更加全面
 

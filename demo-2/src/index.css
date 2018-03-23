@@ -5,6 +5,7 @@ body {
 	background: color(gray alpha(10%));
 }
 .test {
+	background-color: #0000ffcc;
 	font-size: $size;
 	color: $blue;
 }
