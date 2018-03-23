@@ -1,6 +1,8 @@
+process.env.NODE_ENV = 'production';
+
 const webpack = require('webpack');
 
-const config = require('./config/webpack.config.js');
+const config = require('../config/webpack.build.js');
 
 webpack(config, (err, stats) => {
 	if (err) {

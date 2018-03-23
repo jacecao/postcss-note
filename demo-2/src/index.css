@@ -1,7 +1,10 @@
+$blue:#057ef0;
+$size: 2.4rem;
+
 body {
 	background: color(gray alpha(10%));
 }
 .test {
-	font-size: 20px;
-	color: pink;
+	font-size: $size;
+	color: $blue;
 }

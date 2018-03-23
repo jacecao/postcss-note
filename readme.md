@@ -1,23 +1,28 @@
 # postcss 开发笔记
 
-###1. 关于postcss插件
+### 1. 关于postcss插件
 
-###2. gulp配置
+### 2. gulp配置
 
-###3. webpack4.0配置
+### 3. webpack4.0配置
 
 ***
 
-###postcss插件
+### postcss插件
 
-*1.cssnext*
+* **cssnext**
 
 1. cssnext已经停用，由postcss-cssnext替代
 2. postcss-cssnext已经包含一些常用插件，例如autoprefixer，关于poastcss-cssnext配置可以参考[这里](https://github.com/MoOx/postcss-cssnext/blob/master/src/features.js)
 
+* **precss**
+
+在css文件中可以直接使用scss文件系统
+
+
 ***
 
-###gulp配置
+### gulp配置
 
 该项目中demo-1是gulp中postcss的基本配置
 
@@ -32,6 +37,7 @@ const cssnext = require('postcss-cssnext');
 gulp.task('css', function () {
   let plugins = [
     cssnext
+    /* 后面所有的post-css插件都引入这个数组里就可以了 */
   ];
 
   return gulp.src('./src/*.css')
@@ -43,41 +49,62 @@ gulp.task('css', function () {
 
 ***
 
-###webpack4.0配置
+### webpack4.0配置
 
 不得不说webpack4.0版本更加的好用，对于新手更友好，内置插件也更加全面
 
 目前4.0版本内置了babel，所以对ES6语法将直接转为ES5，无需额外插件
 
-官方文档建议大家不用再全局安装webpack，而在本地安装就行，本地安装也是最推荐的方式。
+官方文档建议大家不用全局安装webpack，而在本地安装就行，本地安装也是最推荐的方式。
 
 本地安装那么如何来配置呢？
 
-依然需要先创建webpack.config.js,
+创建基础配置文件webpack.config.js,
 ```javascript
 const path = require('path');
 
+// html 文件插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+// 插件配置
+let html_opt = {
+  title: 'webpack-postcss',
+  // 配置模板文件路径
+  template: path.resolve(__dirname, '../index.html')
+};
+if (process.env.NODE_ENV === 'production') {
+  html_opt.filename = path.resolve(__dirname, '../dist/index.html');
+}
+let htmlPlugin = new HtmlWebpackPlugin(html_opt);
 
-// 这也是官方推荐使用插件，对HTML文件自动更新文件依赖
-const htmlPlugin = new HtmlWebpackPlugin({
-  title: 'auto change html'
-});
+// webpack导出文件清理插件
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+// 配置
+let cleanOPtions = {
+  // 配置当前运行环境的根路径
+  root: path.resolve(__dirname, '../'),
+  exclude: [],
+  verbose: true,
+  dry: false
+};
+let clean = new CleanWebpackPlugin(['dist'], cleanOPtions);
+
 
 module.exports = {
   // 注明开发环境
-  // 根据不同的开发环境决定是否压缩代码,这是当前版本新属性
-  mode: 'development',
-  // 开启观察模式，你看现在这个对于基础打包来讲，配置如此简洁
-  watch: true,
+  // 根据不同的开发环境决定是否压缩代码
+  mode: process.env.NODE_ENV ? process.env.NODE_ENV : 'development',
+  // 是否开启监听模式
+  // watch: true,
+  // 生成源码索引，方便错误调试
+  devtool: 'inline-source-map',
+
   entry: {
-    app: './src/index.js',
-    print: './src/print.js'
+    app: './src/index.js'
   },
-  plugins: [htmlPlugin],
+  plugins: [clean, htmlPlugin],
   output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist/')
+    filename: 'app.bundle.js',
+    path: path.resolve(__dirname, '../dist/js/')
   },
   module: {
     rules: [{
@@ -89,7 +116,7 @@ module.exports = {
         loader: 'css-loader',
         options: {importLoaders: 1}
       }, {
-        loader: 'postcss-loader' 
+        loader: 'postcss-loader'
       }]
     }]
   }
@@ -98,45 +125,65 @@ module.exports = {
 
 注意这里如何配置postcss呢，需要安装postcss-loader, 且如上那样配置，详情可以参见[这里](https://www.npmjs.com/package/postcss)。
 
-接下来我们需要创见入口文件index.js（文件名根据需求来定）
+接下来我们需要创建开发入口文件dev.js，与上配置文件同一目录下    
 ```javascript
-const webpack = require('webpack');
-// 引入webpack配置
-const config = require('./webpack.config.js');
+const path = require('path');
+const webpackConfig = require('./webpack.config');
 
-// 注意这个是核心，这里就类似于gulp了
-// 我们需要手动运行webpack
+const Webpack = require('webpack');
+const WebpackServer = require('webpack-dev-server');
+
+let compiler = Webpack(webpackConfig);
+
+const server = new WebpackServer(compiler, {
+  contentBase: path.resolve(__dirname, '../dist'),
+  stats: {
+    colors: true,
+  }
+});
+
+```
+需要注意的是如果使用上面的配置文件启动`webpack-dev-server`是无法实现实时刷新的，如果需要开启实时刷新，需要通过命令执行模式来开启该服务，如下面的package文件配置那样启动，如果未全局安装webpack那么这时使用命令模式就会出错，所以我们还需要安装`webpack-cli`   
+
+**webpack-cli**
+
+webpack官方的命令端启动工具，非全局安装webpack需要通过命令端启动webpack或启动webpack-dev-server则需要安装webpack-cli来启动本项目内的webpack命令或webpack-dev-server命令，这是webpack4.0版本后必须安装的插件，否则是无法再本地项目中使用命令模式，即使绝对路径启动也不行。
+
+接下来我们再创建生产入口文件build.js，与上配置文件同一目录下    
+```javascript
+process.env.NODE_ENV = 'production';
+
+const webpack = require('webpack');
+
+const config = require('./webpack.build.js');
+
 webpack(config, (err, stats) => {
   if (err) {
     throw err;
   }
-  // 如果没有错误，将得到webpack的编译状态
-  // 这个状态会以标准输出在当前线程中
+
   process.stdout.write(stats.toString({
-    colors: true, // 是否对信息开启颜色模式，即不同的信息类型使用不同的颜色
-    modules: false, // 是否显示模块执行流程
-    children: false, // ?
-    chunks: false, //?
-    chunkModules: false //?
+    colors: true,
+    modules: false,
+    children: false,
+    chunks: false,
+    chunkModules: false
   }) + '\n\n');
-  
-  // 如果编译中有错误就输出
+
   if (stats.hasErrors()) {
-      console.log('  Build failed with errors.\n')
-      process.exit(1)
+    console.log('  Build failed with errors.\n')
+    process.exit(1)
   }
-
-  // 如果没有这个回调函数，那么你就无法获取编译过程及编译状态
-  // 你也就不知道编译出错的原因
 });
-```
 
-完成这个两个文件后，在package.json中，配置命令
+```
+完成以上文件后，在package.json中，配置命令
 
 ```json
 {
   "scripts": {
-    "build": "node index.js"
+    "build": "node build/build.js",
+    "dev": "webpack-dev-server --inline --config config/webpack.config.js"
   }
 }
 
@@ -148,7 +195,11 @@ webpack(config, (err, stats) => {
 
 ```javascript
 module.exports = {
-  plugins: [require('postcss-cssnext')]
+  plugins: [
+  require('postcss-cssnext'),
+  /* 后面所有的post-css插件都引入这个数组里就可以了 */
+  require('precss');
+  ]
 }
 ```
 
